@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://7cvccltb-3100.inc1.devtunnels.ms';
+const API_BASE_URL = 'https://api.goalsbot.com';
 
 // API Response types
 export interface ApiResponse<T> {
