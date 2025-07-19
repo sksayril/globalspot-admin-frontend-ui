@@ -38,6 +38,36 @@ const menuItems = [
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
   const { logout, user } = useAuth();
 
+  // Handle body scroll when sidebar is open on mobile
+  React.useEffect(() => {
+    if (isOpen && window.innerWidth < 1024) {
+      document.body.classList.add('sidebar-open');
+    } else {
+      document.body.classList.remove('sidebar-open');
+    }
+
+    return () => {
+      document.body.classList.remove('sidebar-open');
+    };
+  }, [isOpen]);
+
+  // Handle window resize and orientation change
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [isOpen, setIsOpen]);
+
   const handleLogout = () => {
     logout();
   };
@@ -47,26 +77,28 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-25 lg:hidden"
           onClick={() => setIsOpen(false)}
+          onTouchStart={() => setIsOpen(false)}
+          style={{ touchAction: 'none' }}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed lg:relative inset-y-0 left-0 z-50 bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white transform transition-all duration-300 ease-in-out shadow-2xl backdrop-blur-sm
-        ${isOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0 lg:w-16'}
+      <div className={`fixed lg:relative inset-y-0 left-0 z-30 bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white transform transition-all duration-300 ease-in-out shadow-2xl backdrop-blur-sm max-w-[85vw] lg:max-w-none sidebar-mobile
+        ${isOpen ? 'w-72 sm:w-80 lg:w-64 translate-x-0' : 'w-0 lg:w-16 -translate-x-full lg:translate-x-0'}
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className={`flex items-center justify-between p-4 border-b border-gray-700 ${!isOpen ? 'px-2' : ''}`}>
             {isOpen ? (
               <>
-                <div className="flex items-center space-x-3">
+                {/* <div className="flex items-center space-x-3">
                   <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-2 shadow-lg">
                     <Menu className="text-white w-6 h-6" />
                   </div>
                   <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Admin Panel</h1>
-                </div>
+                </div> */}
                 <button
                   onClick={() => setIsOpen(false)}
                   className="lg:hidden text-gray-300 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
@@ -75,8 +107,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
                 </button>
               </>
             ) : (
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-2 mx-auto shadow-lg">
-                <Menu className="text-white w-6 h-6" />
+              <div >
+                {/* <Menu className="text-white w-6 h-6" /> */}
               </div>
             )}
           </div>

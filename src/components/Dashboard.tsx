@@ -19,6 +19,11 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const handleToggleSidebar = () => {
+    console.log('Dashboard: Toggling sidebar from', sidebarOpen, 'to', !sidebarOpen);
+    setSidebarOpen(!sidebarOpen);
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -51,7 +56,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -59,11 +64,9 @@ const Dashboard: React.FC = () => {
         setIsOpen={setSidebarOpen}
       />
       
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
-      }`}>
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative z-10">
         <Header 
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
           activeTab={activeTab}
           sidebarOpen={sidebarOpen}
         />

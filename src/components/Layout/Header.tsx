@@ -11,6 +11,18 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar, activeTab, sidebarOpen }) => {
   const { user } = useAuth();
 
+  const handleToggleSidebar = () => {
+    console.log('Toggle button clicked, current state:', sidebarOpen);
+    onToggleSidebar();
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleToggleSidebar();
+    }
+  };
+
   const getPageTitle = (tab: string) => {
     switch (tab) {
       case 'overview':
@@ -31,13 +43,16 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, activeTab, sidebarOpen
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200 relative z-20">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
-            onClick={onToggleSidebar}
-            className="text-gray-600 hover:text-gray-800 transition-colors p-1"
+            onClick={handleToggleSidebar}
+            onTouchStart={handleToggleSidebar}
+            onKeyDown={handleKeyPress}
+            className="text-gray-600 hover:text-gray-800 transition-colors p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 touch-manipulation mobile-toggle-button"
             title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            aria-label={sidebarOpen ? 'Close Sidebar' : 'Open Sidebar'}
           >
             <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
