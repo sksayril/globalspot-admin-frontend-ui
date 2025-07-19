@@ -1,3 +1,4 @@
+// const API_BASE_URL = 'https://api.goalsbot.com';
 const API_BASE_URL = 'https://api.goalsbot.com';
 
 // API Response types
@@ -1161,6 +1162,59 @@ export interface SendMessageRequest {
   file?: File;
 }
 
+// Content Management Types
+export interface Content {
+  _id: string;
+  title: string;
+  imageUrl: string;
+  textData: string;
+  isActive: boolean;
+  createdBy: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  updatedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContentListResponse {
+  contents: Content[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export interface ContentResponse {
+  id: string;
+  title: string;
+  imageUrl: string;
+  textData: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateContentRequest {
+  title: string;
+  textData: string;
+  image: File;
+}
+
+export interface UpdateContentRequest {
+  title?: string;
+  textData?: string;
+  isActive?: boolean;
+  image?: File;
+}
+
 export interface SendMessageResponse {
   success: boolean;
   message: string;
@@ -1638,6 +1692,58 @@ class ApiClient {
       method: 'POST',
       body: formData,
       headers,
+    });
+  }
+
+  // Content Management API Methods
+  async uploadContent(data: CreateContentRequest): Promise<ApiResponse<ContentResponse>> {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('textData', data.textData);
+    formData.append('image', data.image);
+    
+    const token = tokenManager.getToken();
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    return this.requestFormData<ContentResponse>('/content/upload', {
+      method: 'POST',
+      body: formData,
+      headers,
+    });
+  }
+
+  async getContentList(page: number = 1, limit: number = 10): Promise<ApiResponse<ContentListResponse>> {
+    return this.get<ContentListResponse>(`/content/admin/list?page=${page}&limit=${limit}`);
+  }
+
+  async getContentById(contentId: string): Promise<ApiResponse<Content>> {
+    return this.get<Content>(`/content/admin/${contentId}`);
+  }
+
+  async updateContent(contentId: string, data: UpdateContentRequest): Promise<ApiResponse<ContentResponse>> {
+    const formData = new FormData();
+    if (data.title) formData.append('title', data.title);
+    if (data.textData) formData.append('textData', data.textData);
+    if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+    if (data.image) formData.append('image', data.image);
+    
+    const token = tokenManager.getToken();
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    return this.requestFormData<ContentResponse>(`/content/admin/${contentId}`, {
+      method: 'PUT',
+      body: formData,
+      headers,
+    });
+  }
+
+  async deleteContent(contentId: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request<{ message: string }>(`/content/admin/${contentId}`, {
+      method: 'DELETE',
     });
   }
 

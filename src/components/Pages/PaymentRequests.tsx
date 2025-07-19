@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Filter, Check, X, Eye, RefreshCw, X as CloseIcon, AlertCircle } from 'lucide-react';
-import { apiClient, DepositRequest, ApproveDepositRequest } from '../../services/api';
+import { CreditCard, Filter, Check, X, Eye, RefreshCw, X as CloseIcon, AlertCircle, Plus, Upload, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { apiClient, DepositRequest, ApproveDepositRequest, Content, CreateContentRequest, UpdateContentRequest } from '../../services/api';
+import { contentService } from '../../services/contentService';
 import { toast } from 'react-hot-toast';
 
 interface DepositDetailModalProps {
@@ -15,6 +16,20 @@ interface ApproveRejectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface ContentModalProps {
+  content: Content | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+interface ContentListModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: (content: Content) => void;
+  onDelete: (contentId: string) => void;
 }
 
 const ApproveRejectModal: React.FC<ApproveRejectModalProps> = ({ 
@@ -153,6 +168,406 @@ const ApproveRejectModal: React.FC<ApproveRejectModalProps> = ({
   );
 };
 
+const ContentModal: React.FC<ContentModalProps> = ({ content, isOpen, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    textData: '',
+  });
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (content) {
+      setFormData({
+        title: content.title,
+        textData: content.textData,
+      });
+      setImagePreview(content.imageUrl);
+    } else {
+      setFormData({
+        title: '',
+        textData: '',
+      });
+      setImage(null);
+      setImagePreview('');
+    }
+  }, [content]);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.textData.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (!content && !image) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      if (content) {
+        // Update existing content
+        const updateData: UpdateContentRequest = {
+          title: formData.title.trim(),
+          textData: formData.textData.trim(),
+          image: image || undefined,
+        };
+        await contentService.updateContent(content._id, updateData);
+        toast.success('Content updated successfully');
+      } else {
+        // Create new content
+        const createData: CreateContentRequest = {
+          title: formData.title.trim(),
+          textData: formData.textData.trim(),
+          image: image!,
+        };
+        await contentService.uploadContent(createData);
+        toast.success('Content uploaded successfully');
+      }
+      
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error saving content:', error);
+      toast.error('Failed to save content');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      title: '',
+      textData: '',
+    });
+    setImage(null);
+    setImagePreview('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">
+              {content ? 'Edit Content' : 'Upload New Content'}
+            </h2>
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <CloseIcon className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Content Title *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Enter content title..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Text Content */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Text Content *
+              </label>
+              <textarea
+                value={formData.textData}
+                onChange={(e) => setFormData({ ...formData, textData: e.target.value })}
+                placeholder="Enter text content..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+                rows={6}
+                required
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image {!content && '*'}
+              </label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <ImageIcon className="w-8 h-8 mb-4 text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </div>
+                
+                {imagePreview && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-48 object-contain bg-gray-100"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={handleClose}
+              disabled={loading}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !formData.title.trim() || !formData.textData.trim() || (!content && !image)}
+              className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>{content ? 'Updating...' : 'Uploading...'}</span>
+                </div>
+              ) : (
+                content ? 'Update Content' : 'Upload Content'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ContentListModal: React.FC<ContentListModalProps> = ({ isOpen, onClose, onEdit, onDelete }) => {
+  const [contents, setContents] = useState<Content[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchContents = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      const response = await contentService.getContentList(page, 10);
+      if (response.success && response.data) {
+        setContents(response.data.contents);
+        setTotalPages(response.data.pagination.pages);
+        setCurrentPage(response.data.pagination.page);
+      } else {
+        toast.error('Failed to load content');
+      }
+    } catch (error) {
+      console.error('Error fetching contents:', error);
+      toast.error('Failed to load content');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchContents();
+    }
+  }, [isOpen]);
+
+  const handleDelete = async (contentId: string) => {
+    if (window.confirm('Are you sure you want to delete this content?')) {
+      try {
+        const response = await contentService.deleteContent(contentId);
+        if (response.success) {
+          toast.success('Content deleted successfully');
+          fetchContents(currentPage);
+        } else {
+          toast.error('Failed to delete content');
+        }
+      } catch (error) {
+        console.error('Error deleting content:', error);
+        toast.error('Failed to delete content');
+      }
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">Content Management</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <CloseIcon className="w-6 h-6" />
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-sky-500" />
+                <span className="text-gray-600">Loading content...</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="text-left p-4 font-medium text-gray-700">Image</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Title</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Status</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Created</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contents.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-gray-500">
+                          No content found
+                        </td>
+                      </tr>
+                    ) : (
+                      contents.map((content) => (
+                        <tr key={content._id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="p-4">
+                            <div className="w-16 h-16 border rounded-lg overflow-hidden">
+                              <img
+                                src={`https://api.goalsbot.com${content.imageUrl}`}
+                                alt={content.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEMyNCAyMS43OTA5IDI1Ljc5MDkgMjAgMjggMjBDMzAuMjA5MSAyMCAzMiAyMS43OTA5IDMyIDI0QzMyIDI2LjIwOTEgMzAuMjA5MSAyOCAyOCAyOEMyNS43OTA5IDI4IDI0IDI2LjIwOTEgMjQgMjRaIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0xNiA0NEMxNiAzOS41ODE3IDE5LjU4MTcgMzYgMjQgMzZINDBDNDQuNDE4MyAzNiA0OCAzOS41ODE3IDQ4IDQ0VjQ4SDE2VjQ0WiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div>
+                              <span className="font-medium text-gray-800">{content.title}</span>
+                              <br />
+                              <span className="text-sm text-gray-500 line-clamp-2">
+                                {content.textData.substring(0, 100)}...
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              content.isActive 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {content.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-gray-600">{formatDate(content.createdAt)}</td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <button 
+                                onClick={() => onEdit(content)}
+                                className="text-blue-600 hover:text-blue-800 p-1" 
+                                title="Edit"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(content._id)}
+                                className="text-red-600 hover:text-red-800 p-1" 
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => fetchContents(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => fetchContents(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DepositDetailModal: React.FC<DepositDetailModalProps> = ({ deposit, isOpen, onClose }) => {
   if (!isOpen || !deposit) return null;
 
@@ -164,6 +579,12 @@ const DepositDetailModal: React.FC<DepositDetailModalProps> = ({ deposit, isOpen
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const getImageUrl = (imagePath: string) => {
+    // Normalize the path by replacing backslashes with forward slashes
+    const normalizedPath = imagePath.replace(/\\/g, '/');
+    return `https://api.goalsbot.com/${normalizedPath}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -262,12 +683,12 @@ const DepositDetailModal: React.FC<DepositDetailModalProps> = ({ deposit, isOpen
                   <p className="text-sm text-gray-600 mb-2">Proof Image</p>
                   <div className="border rounded-lg overflow-hidden">
                     <img
-                      src={`http://localhost:3100/${deposit.paymentProof.replace(/\\/g, '/')}`}
+                      src={getImageUrl(deposit.paymentProof)}
                       alt="Payment Proof"
                       className="w-full h-64 object-contain bg-gray-100"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02MCAxMDBDNjAgODkuNTQ0NyA2OC4wMDAxIDgxLjUgNzguNSAxMDBDNjguMDAwMSAxMTguNSA2MCAxMTAuNDU1IDYwIDEwMFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTEwMCAxMDBDMTEwLjQ1NSAxMDAgMTE4LjUgOTEuOTk5OSAxMDAgMTAwQzgxLjUgMTAwIDg5LjU0NDcgMTA4LjA0NSAxMDAgMTAwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTQwIDEwMEMxNDAgMTEwLjQ1NSAxMzEuOTk5OSAxMTguNSAxMDAgMTAwQzExOC41IDEwMCAxMjAgOTEuOTk5OSAxNDAgMTAwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTAwIDE0MEM5MS45OTk5IDE0MCA4OS41NDQ3IDEzMS45NTUgMTAwIDEyMEMxMTAuNDU1IDEyMCAxMTguNSAxMjguMDAwMSAxMDAgMTQwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTAwIDYwQzEwOC4wNDUgNjAgMTEwLjQ1NSA2OC4wMDAxIDEwMCA3OEM5MS45OTk5IDc4IDg5LjU0NDcgNjguMDAwMSAxMDAgNjBaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo=';
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02MCAxMDBDNjAgODkuNTQ0NyA2OC4wMDAxIDgxLjUgNzguNSAxMDBDNjguMDAwMSAxMTguNSA2MCAxMTAuNDU1IDYwIDEwMFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTEwMCAxMDBDMTEwLjQ1NSAxMDAgMTE4LjUgOTEuOTk5OSAxMDAgMTAwQzgxLjUgMTAwIDg5LjU0NDcgMTA4LjA0NSAxMDAgMTAwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTAwIDE0MEM5MS45OTk5IDE0MCA4OS41NDQ3IDEzMS45NTUgMTAwIDEyMEMxMTAuNDU1IDEyMCAxMTguNSAxMjguMDAwMSAxMDAgMTQwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTAwIDYwQzEwOC4wNDUgNjAgMTEwLjQ1NSA2OC4wMDAxIDEwMCA3OEM5MS45OTk5IDc4IDg5LjU0NDcgNjguMDAwMSAxMDAgNjBaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo=';
                       }}
                     />
                   </div>
@@ -342,6 +763,16 @@ const PaymentRequestsPage: React.FC = () => {
     deposit: null,
     action: 'approve'
   });
+
+  // Content management state
+  const [contentModal, setContentModal] = useState<{
+    isOpen: boolean;
+    content: Content | null;
+  }>({
+    isOpen: false,
+    content: null
+  });
+  const [contentListModal, setContentListModal] = useState(false);
 
   const fetchDeposits = async () => {
     try {
@@ -425,6 +856,37 @@ const PaymentRequestsPage: React.FC = () => {
 
   const handleApproveRejectSuccess = () => {
     fetchDeposits(); // Refresh the data
+  };
+
+  // Content management handlers
+  const handleOpenContentModal = (content: Content | null = null) => {
+    setContentModal({
+      isOpen: true,
+      content
+    });
+  };
+
+  const handleCloseContentModal = () => {
+    setContentModal({
+      isOpen: false,
+      content: null
+    });
+  };
+
+  const handleContentSuccess = () => {
+    // Refresh content list if needed
+    if (contentListModal) {
+      // The ContentListModal will handle its own refresh
+    }
+  };
+
+  const handleEditContent = (content: Content) => {
+    setContentListModal(false);
+    handleOpenContentModal(content);
+  };
+
+  const handleDeleteContent = (contentId: string) => {
+    // The ContentListModal will handle the delete operation
   };
 
   if (loading) {
@@ -514,6 +976,20 @@ const PaymentRequestsPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <h2 className="text-xl font-semibold text-gray-800">Payment Requests</h2>
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setContentListModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Content Management</span>
+            </button>
+            <button
+              onClick={() => handleOpenContentModal()}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Upload Content</span>
+            </button>
             <button
               onClick={fetchDeposits}
               className="flex items-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors"
@@ -629,6 +1105,20 @@ const PaymentRequestsPage: React.FC = () => {
         isOpen={approveRejectModal.isOpen}
         onClose={closeApproveRejectModal}
         onSuccess={handleApproveRejectSuccess}
+      />
+
+      <ContentModal
+        content={contentModal.content}
+        isOpen={contentModal.isOpen}
+        onClose={handleCloseContentModal}
+        onSuccess={handleContentSuccess}
+      />
+
+      <ContentListModal
+        isOpen={contentListModal}
+        onClose={() => setContentListModal(false)}
+        onEdit={handleEditContent}
+        onDelete={handleDeleteContent}
       />
     </div>
   );
