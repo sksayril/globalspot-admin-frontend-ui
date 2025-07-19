@@ -9,7 +9,8 @@ import {
   X,
   Menu,
   Gift,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -27,6 +28,7 @@ const menuItems = [
   { id: 'investment', label: 'Investment', icon: TrendingUp },
   { id: 'payment-requests', label: 'Payment Request', icon: CreditCard },
   { id: 'withdrawal-requests', label: 'Withdrawal Request', icon: Wallet },
+  { id: 'wallet-kyc', label: 'Users Wallet KYC', icon: Shield }, // Added Wallet KYC
   { id: 'distribution', label: 'Distribution Overview', icon: DollarSign }, // Added Distribution Overview
   { id: 'lucky-draw', label: 'Lucky Draw', icon: Gift }, // Added Lucky Draw
   { id: 'first-deposit-bonus', label: 'First Deposit Bonus', icon: Gift },
@@ -51,46 +53,46 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
       )}
 
       {/* Sidebar */}
-      <div className={`fixed lg:relative inset-y-0 left-0 z-50 bg-gradient-to-b from-sky-500 to-sky-600 text-white transform transition-all duration-300 ease-in-out
+      <div className={`fixed lg:relative inset-y-0 left-0 z-50 bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white transform transition-all duration-300 ease-in-out shadow-2xl backdrop-blur-sm
         ${isOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0 lg:w-16'}
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className={`flex items-center justify-between p-4 border-b border-sky-400 ${!isOpen ? 'px-2' : ''}`}>
+          <div className={`flex items-center justify-between p-4 border-b border-gray-700 ${!isOpen ? 'px-2' : ''}`}>
             {isOpen ? (
               <>
                 <div className="flex items-center space-x-3">
-                  <div className="bg-white rounded-lg p-2">
-                    <Menu className="text-sky-600 w-6 h-6" />
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-2 shadow-lg">
+                    <Menu className="text-white w-6 h-6" />
                   </div>
-                  <h1 className="text-xl font-bold">Admin Panel</h1>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Admin Panel</h1>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="lg:hidden text-white hover:text-sky-200 transition-colors"
+                  className="lg:hidden text-gray-300 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </>
             ) : (
-              <div className="bg-white rounded-lg p-2 mx-auto">
-                <Menu className="text-sky-600 w-6 h-6" />
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-2 mx-auto shadow-lg">
+                <Menu className="text-white w-6 h-6" />
               </div>
             )}
           </div>
 
           {/* User info */}
           {isOpen && (
-            <div className="p-4 border-b border-sky-400">
+            <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="bg-white rounded-full w-10 h-10 flex items-center justify-center">
-                  <span className="text-sky-600 font-semibold">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                  <span className="text-white font-bold text-lg">
                     {user?.name?.charAt(0) || 'A'}
                   </span>
                 </div>
                 <div>
-                  <p className="font-semibold">{user?.name}</p>
-                  <p className="text-sky-200 text-sm">{user?.role}</p>
+                  <p className="font-semibold text-white">{user?.name}</p>
+                  <p className="text-gray-300 text-sm bg-gray-800 px-2 py-1 rounded-full inline-block">{user?.role}</p>
                 </div>
               </div>
             </div>
@@ -98,9 +100,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
 
           {/* Collapsed user avatar */}
           {!isOpen && (
-            <div className="p-2 border-b border-sky-400 flex justify-center">
-              <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center">
-                <span className="text-sky-600 font-semibold text-sm">
+            <div className="p-2 border-b border-gray-700 flex justify-center">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                <span className="text-white font-bold text-sm">
                   {user?.name?.charAt(0) || 'A'}
                 </span>
               </div>
@@ -121,17 +123,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
                       setIsOpen(false);
                     }
                   }}
-                  className={`w-full flex items-center transition-all
+                  className={`w-full flex items-center transition-all duration-200 ease-in-out
                     ${isOpen ? 'space-x-3 px-4 py-3 justify-start' : 'justify-center px-0 py-3'}
-                    rounded-xl
+                    rounded-xl mx-2
                     ${isActive
-                      ? 'bg-white text-sky-600 shadow-lg'
-                      : 'text-sky-200 hover:bg-sky-400 hover:text-white'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105 ring-2 ring-purple-300 ring-opacity-50'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white hover:shadow-md'
                     }
                   `}
                   title={!isOpen ? item.label : undefined}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   {isOpen && <span className="font-medium">{item.label}</span>}
                 </button>
               );
@@ -139,12 +141,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
           </nav>
 
           {/* Logout */}
-          <div className={`p-4 border-t border-sky-400 ${!isOpen ? 'px-0' : ''}`}>
+          <div className={`p-4 border-t border-gray-700 ${!isOpen ? 'px-0' : ''}`}>
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center transition-all
+              className={`w-full flex items-center transition-all duration-200 ease-in-out
                 ${isOpen ? 'space-x-3 px-4 py-3 justify-start' : 'justify-center px-0 py-3'}
-                text-sky-200 hover:bg-sky-400 hover:text-white rounded-xl`}
+                text-gray-300 hover:bg-red-600 hover:text-white rounded-xl mx-2 hover:shadow-lg`}
               title={!isOpen ? 'Logout' : undefined}
             >
               <LogOut className="w-5 h-5" />

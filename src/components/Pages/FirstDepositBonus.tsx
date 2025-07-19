@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Gift, Settings, RefreshCw, X as CloseIcon, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { apiClient, UserWithBonus } from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { MobileTable } from '../Common';
 
 interface BonusSettingsModalProps {
   isOpen: boolean;
@@ -246,9 +247,9 @@ const FirstDepositBonusPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -299,25 +300,25 @@ const FirstDepositBonusPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">First Deposit Bonus Management</h2>
             <p className="text-sm text-gray-600 mt-1">
               Current bonus percentage: <span className="font-semibold text-sky-600">{currentPercentage}%</span>
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               onClick={() => setIsSettingsModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm w-full sm:w-auto"
             >
               <Settings className="w-4 h-4" />
               <span>Change Percentage</span>
             </button>
             <button
               onClick={fetchBonusData}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm w-full sm:w-auto"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
@@ -325,63 +326,35 @@ const FirstDepositBonusPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-4 font-medium text-gray-700">User</th>
-                <th className="text-left p-4 font-medium text-gray-700">Bonus Amount</th>
-                <th className="text-left p-4 font-medium text-gray-700">Percentage</th>
-                <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                <th className="text-left p-4 font-medium text-gray-700">Received At</th>
-                <th className="text-left p-4 font-medium text-gray-700">Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-500">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => (
-                  <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="p-4">
-                      <div>
-                        <span className="font-medium text-gray-800">{user.name}</span>
-                        <br />
-                        <span className="text-sm text-gray-500">{user.email}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="font-semibold text-gray-800">
-                        ${user.firstDepositBonus.amount.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {user.firstDepositBonus.percentage}%
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.firstDepositBonus.hasReceived)}`}>
-                        {getStatusText(user.firstDepositBonus.hasReceived)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {user.firstDepositBonus.receivedAt 
-                        ? formatDate(user.firstDepositBonus.receivedAt)
-                        : '-'
-                      }
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {formatDate(user.createdAt)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <MobileTable
+          data={users.map(user => ({
+            ...user,
+            user: (
+              <div>
+                <span className="font-medium text-gray-800">{user.name}</span>
+                <br />
+                <span className="text-sm text-gray-500">{user.email}</span>
+              </div>
+            ),
+            bonusAmount: `$${user.firstDepositBonus.amount.toLocaleString()}`,
+            percentage: `${user.firstDepositBonus.percentage}%`,
+            status: getStatusText(user.firstDepositBonus.hasReceived),
+            receivedAt: user.firstDepositBonus.receivedAt 
+              ? formatDate(user.firstDepositBonus.receivedAt)
+              : '-',
+            joined: formatDate(user.createdAt)
+          }))}
+          columns={[
+            { key: 'user', label: 'User', mobilePriority: true },
+            { key: 'bonusAmount', label: 'Bonus Amount', mobilePriority: true },
+            { key: 'percentage', label: 'Percentage' },
+            { key: 'status', label: 'Status', mobilePriority: true },
+            { key: 'receivedAt', label: 'Received At' },
+            { key: 'joined', label: 'Joined' }
+          ]}
+          emptyMessage="No users found"
+          loading={loading}
+        />
       </div>
 
       <BonusSettingsModal

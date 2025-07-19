@@ -3,6 +3,7 @@ import { CreditCard, Filter, Check, X, Eye, RefreshCw, X as CloseIcon, AlertCirc
 import { apiClient, DepositRequest, ApproveDepositRequest, Content, CreateContentRequest, UpdateContentRequest } from '../../services/api';
 import { contentService } from '../../services/contentService';
 import { toast } from 'react-hot-toast';
+import { MobileTable } from '../Common';
 
 interface DepositDetailModalProps {
   deposit: DepositRequest | null;
@@ -921,8 +922,8 @@ const PaymentRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -972,37 +973,37 @@ const PaymentRequestsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h2 className="text-xl font-semibold text-gray-800">Payment Requests</h2>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               onClick={() => setContentListModal(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm w-full sm:w-auto"
             >
               <Upload className="w-4 h-4" />
               <span>Content Management</span>
             </button>
             <button
               onClick={() => handleOpenContentModal()}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Upload Content</span>
             </button>
             <button
               onClick={fetchDeposits}
-              className="flex items-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm w-full sm:w-auto"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
             </button>
-            <div className="flex items-center space-x-2">
-              <Filter className="text-gray-400 w-5 h-5" />
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <Filter className="text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'approved' | 'rejected')}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                className="flex-1 sm:flex-none border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -1013,84 +1014,77 @@ const PaymentRequestsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-4 font-medium text-gray-700">User</th>
-                <th className="text-left p-4 font-medium text-gray-700">Amount</th>
-                <th className="text-left p-4 font-medium text-gray-700">Payment Method</th>
-                <th className="text-left p-4 font-medium text-gray-700">Payment ID</th>
-                <th className="text-left p-4 font-medium text-gray-700">Wallet Type</th>
-                <th className="text-left p-4 font-medium text-gray-700">Date</th>
-                <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDeposits.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-8 text-gray-500">
-                    No payment requests found
-                  </td>
-                </tr>
-              ) : (
-                filteredDeposits.map((deposit) => (
-                  <tr key={deposit._id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="p-4">
-                      <div>
-                        <span className="font-medium text-gray-800">{deposit.user.name}</span>
-                        <br />
-                        <span className="text-sm text-gray-500">{deposit.user.email}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="font-semibold text-gray-800">${deposit.amount.toLocaleString()}</span>
-                    </td>
-                    <td className="p-4 text-gray-600 capitalize">{deposit.paymentMethod}</td>
-                    <td className="p-4 text-gray-600 font-mono text-sm">{deposit.paymentId}</td>
-                    <td className="p-4 text-gray-600 capitalize">{deposit.walletType}</td>
-                    <td className="p-4 text-gray-600">{formatDate(deposit.createdAt)}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(deposit.status)}`}>
-                        {deposit.status}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => handleViewDetails(deposit)}
-                          className="text-blue-600 hover:text-blue-800 p-1"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {deposit.status === 'pending' && (
-                          <>
-                            <button 
-                              onClick={() => handleApproveReject(deposit, 'approve')}
-                              className="text-green-600 hover:text-green-800 p-1" 
-                              title="Approve"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleApproveReject(deposit, 'reject')}
-                              className="text-red-600 hover:text-red-800 p-1" 
-                              title="Reject"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <MobileTable
+          data={filteredDeposits.map(deposit => ({
+            ...deposit,
+            user: (
+              <div>
+                <span className="font-medium text-gray-800">{deposit.user.name}</span>
+                <br />
+                <span className="text-sm text-gray-500">{deposit.user.email}</span>
+              </div>
+            ),
+            amount: `$${deposit.amount.toLocaleString()}`,
+            paymentMethod: deposit.paymentMethod.charAt(0).toUpperCase() + deposit.paymentMethod.slice(1),
+            paymentId: (
+              <span className="font-mono text-sm">{deposit.paymentId}</span>
+            ),
+            walletType: deposit.walletType.charAt(0).toUpperCase() + deposit.walletType.slice(1),
+            date: formatDate(deposit.createdAt),
+            status: deposit.status,
+            actions: (
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewDetails(deposit);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 p-1"
+                  title="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                {deposit.status === 'pending' && (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApproveReject(deposit, 'approve');
+                      }}
+                      className="text-green-600 hover:text-green-800 p-1" 
+                      title="Approve"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApproveReject(deposit, 'reject');
+                      }}
+                      className="text-red-600 hover:text-red-800 p-1" 
+                      title="Reject"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          }))}
+          columns={[
+            { key: 'user', label: 'User', mobilePriority: true },
+            { key: 'amount', label: 'Amount', mobilePriority: true },
+            { key: 'paymentMethod', label: 'Payment Method' },
+            { key: 'paymentId', label: 'Payment ID' },
+            { key: 'walletType', label: 'Wallet Type' },
+            { key: 'date', label: 'Date' },
+            { key: 'status', label: 'Status', mobilePriority: true },
+            { key: 'actions', label: 'Actions' }
+          ]}
+          onRowClick={handleViewDetails}
+          emptyMessage="No payment requests found"
+          loading={loading}
+        />
       </div>
 
       <DepositDetailModal

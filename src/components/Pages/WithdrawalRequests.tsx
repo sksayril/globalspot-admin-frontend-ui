@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Filter, Check, X, Eye, RefreshCw, AlertCircle } from 'lucide-react';
+import { Wallet, Filter, Check, X, Eye, RefreshCw, AlertCircle, QrCode } from 'lucide-react';
 import { apiClient, WithdrawalRequest, ApproveWithdrawalRequest, RejectWithdrawalRequest } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { dashboardService } from '../../services/dashboardService';
+import { MobileTable } from '../Common';
 
 interface WithdrawalRequestModalProps {
   request: WithdrawalRequest | null;
@@ -10,6 +11,13 @@ interface WithdrawalRequestModalProps {
   onClose: () => void;
   onSuccess: () => void;
   type: 'approve' | 'reject' | 'view';
+  onViewQRCode: (imageUrl: string) => void;
+}
+
+interface QRCodeModalProps {
+  imageUrl: string;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
@@ -17,7 +25,8 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  type
+  type,
+  onViewQRCode
 }) => {
   const [formData, setFormData] = useState({
     transactionHash: '',
@@ -89,9 +98,9 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
   if (!isOpen || !request) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
-        <div className="p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-800">
               {type === 'approve' ? 'Approve' : type === 'reject' ? 'Reject' : 'View'} Withdrawal Request
@@ -133,6 +142,39 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
                     </button>
                   </span>
                 </div>
+                {request.withdrawalWalletText && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Wallet Text:</span>
+                    <span className="font-medium">{request.withdrawalWalletText}</span>
+                  </div>
+                )}
+                {request.withdrawalWalletImage && (
+                  <div className="flex justify-between items-start">
+                    <span className="text-gray-600">QR Code:</span>
+                    <div className="flex items-center gap-2">
+                      <QrCode className="w-4 h-4 text-gray-500" />
+                      <button
+                        onClick={() => {
+                          if (request.withdrawalWalletImage) {
+                            onViewQRCode(request.withdrawalWalletImage);
+                          }
+                        }}
+                        className="w-16 h-16 border rounded overflow-hidden hover:border-sky-500 transition-colors"
+                        title="Click to view larger QR code"
+                      >
+                        <img
+                          src={request.withdrawalWalletImage}
+                          alt="Wallet QR Code"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyNEMyNCAyMS43OTA5IDI1Ljc5MDkgMjAgMjggMjBDMzAuMjA5MSAyMCAzMiAyMS43OTA5IDMyIDI0QzMyIDI2LjIwOTEgMzAuMjA5MSAyOCAyOCAyOEMyNS43OTA5IDI4IDI0IDI2LjIwOTEgMjQgMjRaIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0xNiA0NEMxNiAzOS41ODE3IDE5LjU4MTcgMzYgMjQgMzZINDBDNDQuNDE4MyAzNiA0OCAzOS41ODE3IDQ4IDQ0VjQ4SDE2VjQ0WiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
+                          }}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Wallet Type:</span>
                   <span className="font-medium">{request.walletType}</span>
@@ -243,6 +285,51 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
   );
 };
 
+const QRCodeModal: React.FC<QRCodeModalProps> = ({ imageUrl, isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">Wallet QR Code</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="border rounded-lg overflow-hidden bg-gray-50">
+              <img
+                src={imageUrl}
+                alt="Wallet QR Code"
+                className="w-48 h-48 sm:w-64 sm:h-64 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDI1NiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02NCA2NEM2NCA0Ni44ODU4IDc4Ljg4NTggMzIgOTYgMzJIMTYwQzE3Ny4xMTQgMzIgMTkyIDQ2Ljg4NTggMTkyIDY0VjE2MEMxOTIgMTc3LjExNCAxNzcuMTE0IDE5MiAxNjAgMTkySDk2Qzc4Ljg4NTggMTkyIDY0IDE3Ny4xMTQgNjQgMTYwVjY0WiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTI4IDEyOEMxMjggMTE5LjE2MyAxMzUuMTYzIDExMiAxNDQgMTEyQzE1Mi44MzcgMTEyIDE2MCAxMTkuMTYzIDE2MCAxMjhDMTYwIDEzNi44MzcgMTUyLjgzNyAxNDQgMTQ0IDE0NEMxMzUuMTYzIDE0NCAxMjggMTM2LjgzNyAxMjggMTI4WiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTI4IDE5MkMxMjggMTgzLjE2MyAxMzUuMTYzIDE3NiAxNDQgMTc2QzE1Mi44MzcgMTc2IDE2MCAxODMuMTYzIDE2MCAxOTJDMTYwIDIwMC44MzcgMTUyLjgzNyAyMDggMTQ0IDIwOEMxMzUuMTYzIDIwOCAxMjggMjAwLjgzNyAxMjggMTkyWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMTI4IDY0QzEyOCA1NS4xNjMgMTM1LjE2MyA0OCAxNDQgNDhDMTUyLjgzNyA0OCAxNjAgNTUuMTYzIDE2MCA2NEMxNjAgNzIuODM3IDE1Mi44MzcgODAgMTQ0IDgwQzEzNS4xNjMgODAgMTI4IDcyLjgzNyAxMjggNjRaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo=';
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const WithdrawalRequestsPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [loading, setLoading] = useState(true);
@@ -252,6 +339,13 @@ const WithdrawalRequestsPage: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
   const [modalType, setModalType] = useState<'approve' | 'reject' | 'view'>('approve');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [qrCodeModal, setQrCodeModal] = useState<{
+    isOpen: boolean;
+    imageUrl: string;
+  }>({
+    isOpen: false,
+    imageUrl: ''
+  });
 
   const fetchRequests = async () => {
     try {
@@ -297,6 +391,20 @@ const WithdrawalRequestsPage: React.FC = () => {
 
   const handleModalSuccess = () => {
     fetchRequests();
+  };
+
+  const handleViewQRCode = (imageUrl: string) => {
+    setQrCodeModal({
+      isOpen: true,
+      imageUrl
+    });
+  };
+
+  const closeQRCodeModal = () => {
+    setQrCodeModal({
+      isOpen: false,
+      imageUrl: ''
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -367,67 +475,69 @@ const WithdrawalRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Requests</p>
-              <p className="text-2xl font-bold text-gray-800">{totalRequests}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Total Requests</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{totalRequests}</p>
             </div>
-            <div className="bg-sky-500 rounded-full p-3">
-              <Wallet className="w-6 h-6 text-white" />
+            <div className="bg-sky-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Amount</p>
-              <p className="text-2xl font-bold text-gray-800">${totalAmount.toLocaleString()}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Total Amount</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">${totalAmount.toLocaleString()}</p>
             </div>
-            <div className="bg-green-500 rounded-full p-3">
-              <Wallet className="w-6 h-6 text-white" />
+            <div className="bg-green-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Pending</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{pendingCount}</p>
             </div>
-            <div className="bg-orange-500 rounded-full p-3">
-              <AlertCircle className="w-6 h-6 text-white" />
+            <div className="bg-orange-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Approved</p>
-              <p className="text-2xl font-bold text-green-600">{approvedCount}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Approved</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{approvedCount}</p>
             </div>
-            <div className="bg-purple-500 rounded-full p-3">
-              <Check className="w-6 h-6 text-white" />
+            <div className="bg-purple-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <Check className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">Withdrawal Requests</h2>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Filter className="text-gray-400 w-5 h-5" />
+      {/* Table Section */}
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Withdrawal Requests</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <Filter className="text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'approved' | 'rejected')}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                className="flex-1 sm:flex-none border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -435,96 +545,85 @@ const WithdrawalRequestsPage: React.FC = () => {
                 <option value="rejected">Rejected</option>
               </select>
             </div>
-                         <button
-               onClick={() => fetchRequests()}
-               className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-             >
-               <RefreshCw className="w-4 h-4" />
-               <span>Refresh</span>
-             </button>
+            <button
+              onClick={() => fetchRequests()}
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm w-full sm:w-auto"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-4 font-medium text-gray-700">User</th>
-                <th className="text-left p-4 font-medium text-gray-700">Amount</th>
-                <th className="text-left p-4 font-medium text-gray-700">Wallet Address</th>
-                <th className="text-left p-4 font-medium text-gray-700">Wallet Type</th>
-                <th className="text-left p-4 font-medium text-gray-700">Date</th>
-                <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRequests.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-500">
-                    No withdrawal requests found
-                  </td>
-                </tr>
-              ) : (
-                filteredRequests.map((request) => (
-                  <tr key={request._id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="p-4">
-                      <div>
-                        <span className="font-medium text-gray-800">{request.userName}</span>
-                        <br />
-                        <span className="text-sm text-gray-500">{request.userEmail}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="font-semibold text-gray-800">${request.amount.toLocaleString()}</span>
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      <span className="font-mono text-sm">{request.walletAddress.slice(0, 10)}...</span>
-                    </td>
-                    <td className="p-4 text-gray-600 capitalize">{request.walletType}</td>
-                    <td className="p-4 text-gray-600">{formatDate(request.createdAt)}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                        {request.status}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          className="text-blue-600 hover:text-blue-800 p-1"
-                          title="View Details"
-                          onClick={() => handleView(request)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {request.status === 'pending' && (
-                          <>
-                            <button 
-                              onClick={() => handleApprove(request)}
-                              className="text-green-600 hover:text-green-800 p-1"
-                              title="Approve"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleReject(request)}
-                              className="text-red-600 hover:text-red-800 p-1"
-                              title="Reject"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-
+        <MobileTable
+          data={filteredRequests.map(request => ({
+            ...request,
+            user: (
+              <div>
+                <span className="font-medium text-gray-800">{request.userName}</span>
+                <br />
+                <span className="text-sm text-gray-500">{request.userEmail}</span>
+              </div>
+            ),
+            amount: `$${request.amount.toLocaleString()}`,
+            walletAddress: (
+              <span className="font-mono text-sm">{request.walletAddress.slice(0, 10)}...</span>
+            ),
+            walletType: request.walletType.charAt(0).toUpperCase() + request.walletType.slice(1),
+            date: formatDate(request.createdAt),
+            status: request.status,
+            actions: (
+              <div className="flex items-center space-x-2">
+                <button 
+                  className="text-blue-600 hover:text-blue-800 p-1"
+                  title="View Details"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleView(request);
+                  }}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                {request.status === 'pending' && (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApprove(request);
+                      }}
+                      className="text-green-600 hover:text-green-800 p-1"
+                      title="Approve"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(request);
+                      }}
+                      className="text-red-600 hover:text-red-800 p-1"
+                      title="Reject"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          }))}
+          columns={[
+            { key: 'user', label: 'User', mobilePriority: true },
+            { key: 'amount', label: 'Amount', mobilePriority: true },
+            { key: 'walletAddress', label: 'Wallet Address' },
+            { key: 'walletType', label: 'Wallet Type' },
+            { key: 'date', label: 'Date' },
+            { key: 'status', label: 'Status', mobilePriority: true },
+            { key: 'actions', label: 'Actions' }
+          ]}
+          onRowClick={handleView}
+          emptyMessage="No withdrawal requests found"
+          loading={loading}
+        />
       </div>
 
       <WithdrawalRequestModal
@@ -533,6 +632,13 @@ const WithdrawalRequestsPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleModalSuccess}
         type={modalType}
+        onViewQRCode={handleViewQRCode}
+      />
+
+      <QRCodeModal
+        imageUrl={qrCodeModal.imageUrl}
+        isOpen={qrCodeModal.isOpen}
+        onClose={closeQRCodeModal}
       />
     </div>
   );

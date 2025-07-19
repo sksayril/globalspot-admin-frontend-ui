@@ -1,5 +1,5 @@
-// const API_BASE_URL = 'https://api.goalsbot.com';
 const API_BASE_URL = 'https://api.goalsbot.com';
+// const API_BASE_URL = 'http://localhost:3110';
 
 // API Response types
 export interface ApiResponse<T> {
@@ -565,6 +565,8 @@ export interface WithdrawalRequest {
   userEmail: string;
   userName: string;
   walletAddress: string;
+  withdrawalWalletText?: string;
+  withdrawalWalletImage?: string;
   amount: number;
   walletType: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -1215,6 +1217,122 @@ export interface UpdateContentRequest {
   image?: File;
 }
 
+// Wallet Management Types
+export interface WalletChangeRequest {
+  requestId: string;
+  oldAddress: string;
+  newAddress: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+}
+
+export interface WalletChangeRequestDetail extends WalletChangeRequest {
+  oldQrCode: string;
+  newQrCode: string;
+}
+
+export interface WalletInfo {
+  address: string;
+  qrCode: string;
+  isVerified: boolean;
+  lastUpdated: string;
+}
+
+export interface WalletChangeRequestsResponse {
+  success: boolean;
+  data: {
+    requests: WalletChangeRequest[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+    summary: {
+      total: number;
+      pending: number;
+      approved: number;
+      rejected: number;
+    };
+  };
+}
+
+export interface PendingWalletChangesResponse {
+  success: boolean;
+  data: {
+    requests: WalletChangeRequest[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+    summary: {
+      totalPending: number;
+    };
+  };
+}
+
+export interface ProcessWalletChangeRequest {
+  action: 'approve' | 'reject';
+  adminNotes: string;
+}
+
+export interface ProcessWalletChangeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    requestId: string;
+    action: 'approve' | 'reject';
+    status: 'approved' | 'rejected';
+    adminNotes: string;
+    processedAt: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    walletInfo: WalletInfo;
+  };
+}
+
+export interface WalletChangeDetailsResponse {
+  success: boolean;
+  data: {
+    request: WalletChangeRequestDetail;
+    currentWalletInfo: WalletInfo;
+  };
+}
+
+export interface BulkProcessWalletChangeRequest {
+  requests: Array<{
+    requestId: string;
+    action: 'approve' | 'reject';
+    adminNotes: string;
+  }>;
+}
+
+export interface BulkProcessWalletChangeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    processed: number;
+    errors: number;
+    details: Array<{
+      requestId: string;
+      status: 'success' | 'error';
+      action: 'approve' | 'reject';
+    }>;
+  };
+}
+
 export interface SendMessageResponse {
   success: boolean;
   message: string;
@@ -1745,6 +1863,33 @@ class ApiClient {
     return this.request<{ message: string }>(`/content/admin/${contentId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Wallet Management API Methods
+  async getWalletChangeRequests(page: number = 1, limit: number = 20, filters?: {
+    status?: string;
+    userId?: string;
+  }): Promise<ApiResponse<WalletChangeRequestsResponse>> {
+    let url = `/admin/wallet-change-requests?page=${page}&limit=${limit}`;
+    if (filters?.status) url += `&status=${filters.status}`;
+    if (filters?.userId) url += `&userId=${filters.userId}`;
+    return this.get<WalletChangeRequestsResponse>(url);
+  }
+
+  async getPendingWalletChanges(page: number = 1, limit: number = 20): Promise<ApiResponse<PendingWalletChangesResponse>> {
+    return this.get<PendingWalletChangesResponse>(`/admin/pending-wallet-changes?page=${page}&limit=${limit}`);
+  }
+
+  async processWalletChangeRequest(requestId: string, data: ProcessWalletChangeRequest): Promise<ApiResponse<ProcessWalletChangeResponse>> {
+    return this.post<ProcessWalletChangeResponse>(`/admin/process-wallet-change/${requestId}`, data);
+  }
+
+  async getWalletChangeDetails(requestId: string): Promise<ApiResponse<WalletChangeDetailsResponse>> {
+    return this.get<WalletChangeDetailsResponse>(`/admin/wallet-change-details/${requestId}`);
+  }
+
+  async bulkProcessWalletChanges(data: BulkProcessWalletChangeRequest): Promise<ApiResponse<BulkProcessWalletChangeResponse>> {
+    return this.post<BulkProcessWalletChangeResponse>('/admin/bulk-process-wallet-changes', data);
   }
 
   async updateTicketStatus(ticketId: string, status: string): Promise<ApiResponse<UpdateTicketResponse>> {

@@ -108,9 +108,9 @@ const Overview: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
         <StatsCard
           title="Total Users"
           value={statistics.users.total.toLocaleString()}
@@ -174,59 +174,59 @@ const Overview: React.FC = () => {
       </div>
 
       {/* Additional Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Deposits</p>
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Total Deposits</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                 ${statistics.revenue.totalDeposits.toLocaleString()}
               </p>
             </div>
-            <div className="bg-green-500 rounded-full p-3">
-              <ArrowUpRight className="w-6 h-6 text-white" />
+            <div className="bg-green-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Withdrawals</p>
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Total Withdrawals</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                 ${statistics.revenue.totalWithdrawals.toLocaleString()}
               </p>
             </div>
-            <div className="bg-red-500 rounded-full p-3">
-              <ArrowDownRight className="w-6 h-6 text-white" />
+            <div className="bg-red-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <ArrowDownRight className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Investment Balance</p>
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Investment Balance</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                 ${statistics.wallets.totalInvestmentBalance.toLocaleString()}
               </p>
             </div>
-            <div className="bg-purple-500 rounded-full p-3">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="bg-purple-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Normal Balance</p>
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600">Normal Balance</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                 ${statistics.wallets.totalNormalBalance.toLocaleString()}
               </p>
             </div>
-            <div className="bg-sky-500 rounded-full p-3">
-              <Wallet className="w-6 h-6 text-white" />
+            <div className="bg-sky-500 rounded-full p-2 sm:p-3 ml-3 flex-shrink-0">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
           </div>
         </div>

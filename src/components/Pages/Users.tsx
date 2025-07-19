@@ -4,6 +4,7 @@ import { Search, Filter, Plus, Eye, Shield, ShieldOff, Users as UsersIcon, Mail,
 import { dashboardService } from '../../services/dashboardService';
 import { User } from '../../services/api';
 import UserDetail from './UserDetail';
+import { MobileTable } from '../Common';
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -176,44 +177,44 @@ const Users: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">Users Management</h2>
-          <div className="flex items-center space-x-2">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Users Management</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <span className="text-sm text-gray-600">Total Users: {users.length}</span>
             <button 
               onClick={() => fetchUsers(true)}
               disabled={loading}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm w-full sm:w-auto"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
-            <button className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+            <button className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               <span>Add User</span>
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Search users by name, email, phone, or referral code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Filter className="text-gray-400 w-5 h-5" />
+            <Filter className="text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive' | 'blocked')}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
             >
               <option value="all">All Users</option>
               <option value="active">Active</option>
@@ -223,171 +224,172 @@ const Users: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-4 font-medium text-gray-700">User</th>
-                <th className="text-left p-4 font-medium text-gray-700">Contact</th>
-                <th className="text-left p-4 font-medium text-gray-700">Wallets</th>
-                <th className="text-left p-4 font-medium text-gray-700">Referral</th>
-                                  <th className="text-left p-4 font-medium text-gray-700">Password</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Join Date</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => (
-                <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-sky-100 rounded-full w-10 h-10 flex items-center justify-center">
-                        <UsersIcon className="w-5 h-5 text-sky-600" />
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-800">{user.name}</span>
-                        <p className="text-xs text-gray-500">ID: {user._id.slice(-8)}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-1">
-                        <Mail className="w-3 h-3 text-gray-400" />
-                        <span className="text-sm text-gray-600">{user.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Phone className="w-3 h-3 text-gray-400" />
-                        <span className="text-sm text-gray-600">{user.phone}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Normal:</span>
-                        <span className="font-medium">{formatAmount(user.normalWallet.balance)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Investment:</span>
-                        <span className="font-medium">{formatAmount(user.investmentWallet.balance)}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Code:</span>
-                        <span className="font-medium">{user.referralCode}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Level:</span>
-                        <span className="font-medium">{user.referralLevel}</span>
-                      </div>
-                      {user.referredBy && (
-                        <div className="text-xs text-gray-500">
-                          By: {user.referredBy.name}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      {userPasswords[user._id] ? (
-                        <div className="flex items-center space-x-1">
-                          <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                            {passwordVisibility[user._id] 
-                              ? userPasswords[user._id] 
-                              : '••••••••'
-                            }
-                          </span>
-                          <button
-                            onClick={() => setPasswordVisibility(prev => ({
-                              ...prev,
-                              [user._id]: !prev[user._id]
-                            }))}
-                            className="text-gray-500 hover:text-gray-700"
-                            title={passwordVisibility[user._id] ? 'Hide Password' : 'Show Password'}
-                          >
-                            {passwordVisibility[user._id] ? (
-                              <EyeOff className="w-3 h-3" />
-                            ) : (
-                              <Eye className="w-3 h-3" />
-                            )}
-                          </button>
-                        </div>
+        <MobileTable
+          data={filteredUsers.map(user => ({
+            ...user,
+            user: (
+              <div className="flex items-center space-x-3">
+                <div className="bg-sky-100 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                  <UsersIcon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-800">{user.name}</span>
+                  <p className="text-xs text-gray-500">ID: {user._id.slice(-8)}</p>
+                </div>
+              </div>
+            ),
+            contact: (
+              <div className="space-y-1">
+                <div className="flex items-center space-x-1">
+                  <Mail className="w-3 h-3 text-gray-400" />
+                  <span className="text-sm text-gray-600">{user.email}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Phone className="w-3 h-3 text-gray-400" />
+                  <span className="text-sm text-gray-600">{user.phone}</span>
+                </div>
+              </div>
+            ),
+            wallets: (
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Normal:</span>
+                  <span className="font-medium">{formatAmount(user.normalWallet.balance)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Investment:</span>
+                  <span className="font-medium">{formatAmount(user.investmentWallet.balance)}</span>
+                </div>
+              </div>
+            ),
+            referral: (
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Code:</span>
+                  <span className="font-medium">{user.referralCode}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Level:</span>
+                  <span className="font-medium">{user.referralLevel}</span>
+                </div>
+                {user.referredBy && (
+                  <div className="text-xs text-gray-500">
+                    By: {user.referredBy.name}
+                  </div>
+                )}
+              </div>
+            ),
+            password: (
+              <div className="flex items-center space-x-2">
+                {userPasswords[user._id] ? (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                      {passwordVisibility[user._id] 
+                        ? userPasswords[user._id] 
+                        : '••••••••'
+                      }
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPasswordVisibility(prev => ({
+                          ...prev,
+                          [user._id]: !prev[user._id]
+                        }));
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                      title={passwordVisibility[user._id] ? 'Hide Password' : 'Show Password'}
+                    >
+                      {passwordVisibility[user._id] ? (
+                        <EyeOff className="w-3 h-3" />
                       ) : (
-                        <span className="text-sm text-gray-500">Not loaded</span>
+                        <Eye className="w-3 h-3" />
                       )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="space-y-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                      {user.isBlocked && (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          Blocked
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-3 h-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">{formatDate(user.createdAt)}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        onClick={() => handleViewUser(user)}
-                        className="text-blue-600 hover:text-blue-800 p-1"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleBlockUser(user._id, !user.isBlocked)}
-                        disabled={blockingUser === user._id}
-                        className={`p-1 ${
-                          user.isBlocked 
-                            ? 'text-green-600 hover:text-green-800' 
-                            : 'text-red-600 hover:text-red-800'
-                        } ${blockingUser === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={user.isBlocked ? 'Unblock User' : 'Block User'}
-                      >
-                        {blockingUser === user._id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                        ) : (
-                          user.isBlocked ? <Shield className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />
-                        )}
-                      </button>
-                      <button 
-                        onClick={() => handleViewPassword(user._id)}
-                        className="text-purple-600 hover:text-purple-800 p-1"
-                        title="View Password"
-                      >
-                        <Key className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-8">
-            <UsersIcon className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-            <p className="text-gray-500">No users found</p>
-          </div>
-        )}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-500">Not loaded</span>
+                )}
+              </div>
+            ),
+            status: (
+              <div className="space-y-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {user.isActive ? 'Active' : 'Inactive'}
+                </span>
+                {user.isBlocked && (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Blocked
+                  </span>
+                )}
+              </div>
+            ),
+            joinDate: (
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-3 h-3 text-gray-400" />
+                <span className="text-sm text-gray-600">{formatDate(user.createdAt)}</span>
+              </div>
+            ),
+            actions: (
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewUser(user);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 p-1"
+                  title="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleBlockUser(user._id, !user.isBlocked);
+                  }}
+                  disabled={blockingUser === user._id}
+                  className={`p-1 ${
+                    user.isBlocked 
+                      ? 'text-green-600 hover:text-green-800' 
+                      : 'text-red-600 hover:text-red-800'
+                  } ${blockingUser === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={user.isBlocked ? 'Unblock User' : 'Block User'}
+                >
+                  {blockingUser === user._id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                  ) : (
+                    user.isBlocked ? <Shield className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />
+                  )}
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewPassword(user._id);
+                  }}
+                  className="text-purple-600 hover:text-purple-800 p-1"
+                  title="View Password"
+                >
+                  <Key className="w-4 h-4" />
+                </button>
+              </div>
+            )
+          }))}
+          columns={[
+            { key: 'user', label: 'User', mobilePriority: true },
+            { key: 'contact', label: 'Contact', mobilePriority: true },
+            { key: 'wallets', label: 'Wallets' },
+            { key: 'referral', label: 'Referral' },
+            { key: 'password', label: 'Password' },
+            { key: 'status', label: 'Status', mobilePriority: true },
+            { key: 'joinDate', label: 'Join Date' },
+            { key: 'actions', label: 'Actions' }
+          ]}
+          onRowClick={handleViewUser}
+          emptyMessage="No users found"
+          loading={loading}
+        />
       </div>
 
       {/* User Detail Modal */}

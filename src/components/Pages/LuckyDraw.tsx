@@ -30,6 +30,7 @@ import {
   AddUsersToLuckyDrawRequest,
   RemoveUsersFromLuckyDrawRequest
 } from '../../services/api';
+import { MobileTable } from '../Common';
 
 const LuckyDrawPage: React.FC = () => {
   const [luckyDraws, setLuckyDraws] = useState<LuckyDraw[]>([]);
@@ -282,117 +283,103 @@ const LuckyDrawPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Lucky Draw Management</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Lucky Draw Management</h1>
           <p className="text-gray-600">Create and manage lucky draws for users</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="mt-4 sm:mt-0 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="mt-4 sm:mt-0 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm w-full sm:w-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>Create Lucky Draw</span>
         </button>
       </div>
 
       {/* Lucky Draws List */}
-      <div className="bg-white rounded-xl shadow-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-800">All Lucky Draws</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Lucky Draw
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prize Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Participants
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dates
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {luckyDraws.map((luckyDraw) => (
-                <tr key={luckyDraw._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{luckyDraw.title}</div>
-                      <div className="text-sm text-gray-500">{luckyDraw.description}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-green-600">
-                      {formatCurrency(luckyDraw.amount)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {luckyDraw.currentParticipants} / {luckyDraw.maxParticipants}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(luckyDraw.status)}`}>
-                      {luckyDraw.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>Start: {formatDate(luckyDraw.startDate)}</div>
-                    <div>End: {formatDate(luckyDraw.endDate)}</div>
-                    <div>Draw: {formatDate(luckyDraw.drawDate)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleViewDetails(luckyDraw._id)}
-                        className="text-sky-600 hover:text-sky-900"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleViewStats(luckyDraw._id)}
-                        className="text-purple-600 hover:text-purple-900"
-                        title="View Stats"
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setShowEditModal(true)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Edit"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteLuckyDraw(luckyDraw._id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        
+        <MobileTable
+          data={luckyDraws.map(luckyDraw => ({
+            ...luckyDraw,
+            luckyDraw: (
+              <div>
+                <div className="text-sm font-medium text-gray-900">{luckyDraw.title}</div>
+                <div className="text-sm text-gray-500">{luckyDraw.description}</div>
+              </div>
+            ),
+            prizeAmount: formatCurrency(luckyDraw.amount),
+            participants: `${luckyDraw.currentParticipants} / ${luckyDraw.maxParticipants}`,
+            status: luckyDraw.status,
+            dates: (
+              <div className="text-sm text-gray-500">
+                <div>Start: {formatDate(luckyDraw.startDate)}</div>
+                <div>End: {formatDate(luckyDraw.endDate)}</div>
+                <div>Draw: {formatDate(luckyDraw.drawDate)}</div>
+              </div>
+            ),
+            actions: (
+              <div className="flex space-x-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewDetails(luckyDraw._id);
+                  }}
+                  className="text-sky-600 hover:text-sky-900"
+                  title="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewStats(luckyDraw._id);
+                  }}
+                  className="text-purple-600 hover:text-purple-900"
+                  title="View Stats"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-900"
+                  title="Edit"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteLuckyDraw(luckyDraw._id);
+                  }}
+                  className="text-red-600 hover:text-red-900"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )
+          }))}
+          columns={[
+            { key: 'luckyDraw', label: 'Lucky Draw', mobilePriority: true },
+            { key: 'prizeAmount', label: 'Prize Amount', mobilePriority: true },
+            { key: 'participants', label: 'Participants' },
+            { key: 'status', label: 'Status', mobilePriority: true },
+            { key: 'dates', label: 'Dates' },
+            { key: 'actions', label: 'Actions' }
+          ]}
+          emptyMessage="No lucky draws found"
+          loading={loading}
+        />
       </div>
 
       {/* Pagination */}

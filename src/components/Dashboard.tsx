@@ -8,6 +8,7 @@ import RevenuePage from './Pages/Revenue';
 import InvestmentPage from './Pages/Investment';
 import PaymentRequestsPage from './Pages/PaymentRequests';
 import WithdrawalRequestsPage from './Pages/WithdrawalRequests';
+import WalletKYCPage from './Pages/WalletKYC';
 import FirstDepositBonusPage from './Pages/FirstDepositBonus';
 import Distribution from './Pages/Distribution';
 import LuckyDraw from './Pages/LuckyDraw';
@@ -34,6 +35,8 @@ const Dashboard: React.FC = () => {
         return <PaymentRequestsPage />;
       case 'withdrawal-requests':
         return <WithdrawalRequestsPage />;
+      case 'wallet-kyc':
+        return <WalletKYCPage />;
       case 'distribution':
         return <Distribution />;
       case 'lucky-draw':
@@ -65,7 +68,7 @@ const Dashboard: React.FC = () => {
           sidebarOpen={sidebarOpen}
         />
         
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-gray-100">
           {renderContent()}
         </main>
       </div>

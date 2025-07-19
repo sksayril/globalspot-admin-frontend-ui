@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, PlusCircle, Filter, BarChart3, Edit, Trash2, Eye, RefreshCw, X as CloseIcon, ToggleLeft, ToggleRight } from 'lucide-react';
 import { apiClient, InvestmentPlan, UserInvestment } from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { MobileTable } from '../Common';
 
 interface InvestmentPlanModalProps {
   plan: InvestmentPlan | null;
@@ -431,9 +432,9 @@ const InvestmentPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -484,8 +485,8 @@ const InvestmentPage: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex space-x-4">
             <button
               onClick={() => setActiveTab('plans')}
@@ -509,14 +510,14 @@ const InvestmentPage: React.FC = () => {
             </button>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             {activeTab === 'plans' && (
               <button
                 onClick={() => {
                   setSelectedPlan(null);
                   setIsModalOpen(true);
                 }}
-                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm w-full sm:w-auto"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>New Plan</span>
@@ -524,7 +525,7 @@ const InvestmentPage: React.FC = () => {
             )}
             <button
               onClick={fetchData}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm w-full sm:w-auto"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
@@ -534,129 +535,102 @@ const InvestmentPage: React.FC = () => {
 
         {/* Investment Plans Tab */}
         {activeTab === 'plans' && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left p-4 font-medium text-gray-700">Plan</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Investment Required</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Daily Return</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Duration</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Total Return</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plans.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-8 text-gray-500">
-                      No investment plans found
-                    </td>
-                  </tr>
-                ) : (
-                  plans.map((plan) => (
-                    <tr key={plan._id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="p-4">
-                        <div>
-                          <span className="font-medium text-gray-800">{plan.title}</span>
-                          <br />
-                          <span className="text-sm text-gray-500">{plan.description}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-600">${plan.investmentRequired.toLocaleString()}</td>
-                      <td className="p-4 text-gray-600">{plan.dailyPercentage}%</td>
-                      <td className="p-4 text-gray-600">{plan.durationDays} days</td>
-                      <td className="p-4 text-gray-600">{plan.totalReturnPercentage}%</td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.isActive)}`}>
-                          {plan.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => handleTogglePlan(plan._id)}
-                            className="text-blue-600 hover:text-blue-800 p-1"
-                            title={plan.isActive ? 'Deactivate' : 'Activate'}
-                          >
-                            {plan.isActive ? <ToggleLeft className="w-4 h-4" /> : <ToggleRight className="w-4 h-4" />}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedPlan(plan);
-                              setIsModalOpen(true);
-                            }}
-                            className="text-green-600 hover:text-green-800 p-1"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePlan(plan._id)}
-                            className="text-red-600 hover:text-red-800 p-1"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <MobileTable
+            data={plans.map(plan => ({
+              ...plan,
+              plan: (
+                <div>
+                  <span className="font-medium text-gray-800">{plan.title}</span>
+                  <br />
+                  <span className="text-sm text-gray-500">{plan.description}</span>
+                </div>
+              ),
+              investmentRequired: `$${plan.investmentRequired.toLocaleString()}`,
+              dailyReturn: `${plan.dailyPercentage}%`,
+              duration: `${plan.durationDays} days`,
+              totalReturn: `${plan.totalReturnPercentage}%`,
+              status: plan.isActive ? 'Active' : 'Inactive',
+              actions: (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTogglePlan(plan._id);
+                    }}
+                    className="text-blue-600 hover:text-blue-800 p-1"
+                    title={plan.isActive ? 'Deactivate' : 'Activate'}
+                  >
+                    {plan.isActive ? <ToggleLeft className="w-4 h-4" /> : <ToggleRight className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPlan(plan);
+                      setIsModalOpen(true);
+                    }}
+                    className="text-green-600 hover:text-green-800 p-1"
+                    title="Edit"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePlan(plan._id);
+                    }}
+                    className="text-red-600 hover:text-red-800 p-1"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )
+            }))}
+            columns={[
+              { key: 'plan', label: 'Plan', mobilePriority: true },
+              { key: 'investmentRequired', label: 'Investment Required', mobilePriority: true },
+              { key: 'dailyReturn', label: 'Daily Return' },
+              { key: 'duration', label: 'Duration' },
+              { key: 'totalReturn', label: 'Total Return' },
+              { key: 'status', label: 'Status', mobilePriority: true },
+              { key: 'actions', label: 'Actions' }
+            ]}
+            emptyMessage="No investment plans found"
+            loading={loading}
+          />
         )}
 
         {/* User Investments Tab */}
         {activeTab === 'investments' && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left p-4 font-medium text-gray-700">User</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Plan</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Investment Amount</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Daily Earning</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Total Earned</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Remaining Days</th>
-                  <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userInvestments.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-8 text-gray-500">
-                      No user investments found
-                    </td>
-                  </tr>
-                ) : (
-                  userInvestments.map((investment) => (
-                    <tr key={investment._id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="p-4">
-                        <div>
-                          <span className="font-medium text-gray-800">{investment.userId.name}</span>
-                          <br />
-                          <span className="text-sm text-gray-500">{investment.userId.email}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-600">{investment.planId.title}</td>
-                      <td className="p-4 text-gray-600">${investment.investmentAmount.toLocaleString()}</td>
-                      <td className="p-4 text-gray-600">${investment.dailyEarning.toLocaleString()}</td>
-                      <td className="p-4 text-gray-600">${investment.totalEarned.toLocaleString()}</td>
-                      <td className="p-4 text-gray-600">{investment.remainingDays} days</td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getInvestmentStatusColor(investment)}`}>
-                          {getInvestmentStatusText(investment)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <MobileTable
+            data={userInvestments.map(investment => ({
+              ...investment,
+              user: (
+                <div>
+                  <span className="font-medium text-gray-800">{investment.userId.name}</span>
+                  <br />
+                  <span className="text-sm text-gray-500">{investment.userId.email}</span>
+                </div>
+              ),
+              plan: investment.planId.title,
+              investmentAmount: `$${investment.investmentAmount.toLocaleString()}`,
+              dailyEarning: `$${investment.dailyEarning.toLocaleString()}`,
+              totalEarned: `$${investment.totalEarned.toLocaleString()}`,
+              remainingDays: `${investment.remainingDays} days`,
+              status: getInvestmentStatusText(investment)
+            }))}
+            columns={[
+              { key: 'user', label: 'User', mobilePriority: true },
+              { key: 'plan', label: 'Plan', mobilePriority: true },
+              { key: 'investmentAmount', label: 'Investment Amount' },
+              { key: 'dailyEarning', label: 'Daily Earning' },
+              { key: 'totalEarned', label: 'Total Earned' },
+              { key: 'remainingDays', label: 'Remaining Days' },
+              { key: 'status', label: 'Status', mobilePriority: true }
+            ]}
+            emptyMessage="No user investments found"
+            loading={loading}
+          />
         )}
       </div>
 
